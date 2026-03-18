@@ -9,9 +9,9 @@ export class GetProfileUsecase {
     private readonly authRepository: AuthRepository,
   ) {}
 
-  async execute(userId: string): Promise<{ id: string; username: string; email: string }> {
+  async execute(userId: string): Promise<{ id: string; username: string; email: string; initialBalance: number }> {
     const user = await this.authRepository.findById(userId);
     if (!user) throw new NotFoundException('Utilisateur non trouvé');
-    return { id: user.id, username: user.username, email: user.email };
+    return { id: user.id, username: user.username, email: user.email, initialBalance: user.initialBalance ?? 0 };
   }
 }

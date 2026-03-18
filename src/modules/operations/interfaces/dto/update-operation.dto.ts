@@ -21,9 +21,5 @@ export class UpdateOperationDto {
 
   @IsOptional()
   @IsString()
-  accountId?: string;
-
-  @IsOptional()
-  @IsString()
   notes?: string;
 }

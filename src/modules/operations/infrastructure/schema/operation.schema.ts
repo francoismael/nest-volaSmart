@@ -18,7 +18,7 @@ export const OperationSchema = new Schema<OperationDocument>(
     label: { type: String, required: true },
     debit: { type: Number, default: 0 },
     credit: { type: Number, default: 0 },
-    accountId: { type: String, required: true },
+    accountId: { type: String },
     userId: { type: String, required: true },
     notes: { type: String },
     createdBy: { type: String },

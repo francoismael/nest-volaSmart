@@ -8,6 +8,8 @@ import { AuthRepositoryToken } from './application/ports/auth.repository.token';
 import { RegisterUsecase } from './application/usecases/register.usecase';
 import { LoginUsecase } from './application/usecases/login.usecase';
 import { GetProfileUsecase } from './application/usecases/get-profile.usecase';
+import { UpdateProfileUsecase } from './application/usecases/update-profile.usecase';
+import { ChangePasswordUsecase } from './application/usecases/change-password.usecase';
 import { userSchema } from './infrastructure/schema/user.schema';
 import { TokenBlacklistService } from './application/services/token-blacklist.service';
 import { JwtStrategy } from './strategies/strategy.jwt';
@@ -28,10 +30,15 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
     RegisterUsecase,
     LoginUsecase,
     GetProfileUsecase,
+    UpdateProfileUsecase,
+    ChangePasswordUsecase,
     TokenBlacklistService,
     JwtStrategy,
     JwtAuthGuard,
   ],
-  exports: [TokenBlacklistService, JwtStrategy, JwtAuthGuard, JwtModule],
+  exports: [
+    TokenBlacklistService, JwtStrategy, JwtAuthGuard, JwtModule,
+    { provide: AuthRepositoryToken, useClass: MongoAuthRepository },
+  ],
 })
 export class AuthenticationModule {}

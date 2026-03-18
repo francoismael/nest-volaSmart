@@ -3,7 +3,6 @@ import { Operation } from '../../domain/entities/operation';
 export interface OperationsFilter {
   startDate?: Date;
   endDate?: Date;
-  accountId?: string;
 }
 
 export interface OperationsRepository {

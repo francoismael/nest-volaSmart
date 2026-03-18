@@ -41,7 +41,7 @@ export class OperationsController {
       dto.label,
       dto.debit ?? 0,
       dto.credit ?? 0,
-      dto.accountId,
+      '',
       req.user.userId,
       dto.notes,
     );
@@ -52,12 +52,10 @@ export class OperationsController {
     @Request() req: RequestWithUser,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
-    @Query('accountId') accountId?: string,
   ) {
     return this.findAllOperationsUsecase.execute(req.user.userId, {
       startDate: startDate ? new Date(startDate) : undefined,
       endDate: endDate ? new Date(endDate) : undefined,
-      accountId,
     });
   }
 
@@ -79,7 +77,7 @@ export class OperationsController {
       dto.label,
       dto.debit,
       dto.credit,
-      dto.accountId,
+      undefined,
       dto.notes,
     );
   }

@@ -18,10 +18,6 @@ export class CreateOperationDto {
   @Min(0)
   credit?: number;
 
-  @IsNotEmpty()
-  @IsString()
-  accountId: string;
-
   @IsOptional()
   @IsString()
   notes?: string;

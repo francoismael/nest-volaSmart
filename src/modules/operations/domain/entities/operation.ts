@@ -5,7 +5,7 @@ export class Operation {
     public label: string,
     public debit: number,
     public credit: number,
-    public accountId: string,
+    public accountId: string = '',
     public userId: string,
     public notes?: string,
     public createdBy?: string,

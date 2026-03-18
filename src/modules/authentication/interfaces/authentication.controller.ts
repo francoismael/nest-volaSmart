@@ -1,11 +1,25 @@
-import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { RegisterUsecase } from '../application/usecases/register.usecase';
 import { LoginUsecase } from '../application/usecases/login.usecase';
 import { GetProfileUsecase } from '../application/usecases/get-profile.usecase';
+import { UpdateProfileUsecase } from '../application/usecases/update-profile.usecase';
+import { ChangePasswordUsecase } from '../application/usecases/change-password.usecase';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { TokenBlacklistService } from '../application/services/token-blacklist.service';
+
+class UpdateProfileDto {
+  @IsOptional() @IsString() username?: string;
+  @IsOptional() @IsString() email?: string;
+  @IsOptional() @IsNumber() @Min(0) initialBalance?: number;
+}
+
+class ChangePasswordDto {
+  @IsString() currentPassword: string;
+  @IsString() newPassword: string;
+}
 
 interface RequestWithUser {
   user: { userId: string };
@@ -18,6 +32,8 @@ export class AuthController {
     private readonly registerUsecase: RegisterUsecase,
     private readonly loginUsecase: LoginUsecase,
     private readonly getProfileUsecase: GetProfileUsecase,
+    private readonly updateProfileUsecase: UpdateProfileUsecase,
+    private readonly changePasswordUsecase: ChangePasswordUsecase,
     private readonly tokenBlacklist: TokenBlacklistService,
   ) {}
 
@@ -35,6 +51,19 @@ export class AuthController {
   @Get('profile')
   async getProfile(@Request() req: RequestWithUser) {
     return this.getProfileUsecase.execute(req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('profile')
+  async updateProfile(@Request() req: RequestWithUser, @Body() dto: UpdateProfileDto) {
+    return this.updateProfileUsecase.execute(req.user.userId, dto.username, dto.email, dto.initialBalance);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('profile/password')
+  async changePassword(@Request() req: RequestWithUser, @Body() dto: ChangePasswordDto) {
+    await this.changePasswordUsecase.execute(req.user.userId, dto.currentPassword, dto.newPassword);
+    return { message: 'Mot de passe modifié avec succès' };
   }
 
   @UseGuards(JwtAuthGuard)

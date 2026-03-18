@@ -19,7 +19,10 @@ export class GetLedgerUsecase {
   async execute(userId: string): Promise<LedgerResult> {
     const operations = await this.operationsRepository.findAll(userId);
     const totalDebit = operations.reduce((sum, op) => sum + (op.debit ?? 0), 0);
-    const totalCredit = operations.reduce((sum, op) => sum + (op.credit ?? 0), 0);
+    const totalCredit = operations.reduce(
+      (sum, op) => sum + (op.credit ?? 0),
+      0,
+    );
     const balance = totalCredit - totalDebit;
 
     return { operations, totalDebit, totalCredit, balance };

@@ -18,7 +18,7 @@ export class MongoOperationsRepository implements OperationsRepository {
       doc.label,
       doc.debit,
       doc.credit,
-      doc.accountId,
+      '',
       doc.userId,
       doc.notes,
       doc.createdBy,
@@ -32,7 +32,6 @@ export class MongoOperationsRepository implements OperationsRepository {
       label: operation.label,
       debit: operation.debit,
       credit: operation.credit,
-      accountId: operation.accountId,
       userId: operation.userId,
       notes: operation.notes,
       createdBy: operation.createdBy,
@@ -44,7 +43,6 @@ export class MongoOperationsRepository implements OperationsRepository {
   async findAll(userId: string, filter?: OperationsFilter): Promise<Operation[]> {
     const query: FilterQuery<OperationDocument> = { userId };
 
-    if (filter?.accountId) query.accountId = filter.accountId;
     if (filter?.startDate || filter?.endDate) {
       query.date = {};
       if (filter.startDate) query.date.$gte = filter.startDate;
@@ -70,7 +68,6 @@ export class MongoOperationsRepository implements OperationsRepository {
           label: operation.label,
           debit: operation.debit,
           credit: operation.credit,
-          accountId: operation.accountId,
           notes: operation.notes,
           updatedBy: operation.updatedBy,
         },
