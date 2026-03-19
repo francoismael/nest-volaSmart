@@ -66,7 +66,11 @@ export class RecurringController {
     if (dto.daysOfWeek !== undefined) data.daysOfWeek = dto.daysOfWeek;
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
     if (dto.notes !== undefined) data.notes = dto.notes;
-    return this.recurringRepo.update(id, req.user.userId, data);
+    const updated = await this.recurringRepo.update(id, req.user.userId, data);
+    if (dto.isActive === true) {
+      await this.scheduler.processAllDue();
+    }
+    return updated;
   }
 
   @Delete(':id')

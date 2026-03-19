@@ -28,10 +28,19 @@ export class RecurringSchedulerService implements OnApplicationBootstrap {
   async processAllDue(): Promise<void> {
     const today = this.startOfDay(new Date());
     const allActive = await this.recurringModel.find({ isActive: true }).exec();
+    this.logger.log(`processAllDue: today=${today.toISOString()}, ${allActive.length} actifs`);
 
     let created = 0;
     for (const rec of allActive) {
-      const nextDate = this.startOfDay(new Date(rec.nextDate));
+      let nextDate: Date;
+      if (!rec.nextDate || isNaN(new Date(rec.nextDate).getTime())) {
+        // nextDate manquant → traiter comme dû aujourd'hui
+        nextDate = today;
+        this.logger.warn(`  → "${rec.label}" nextDate manquant, traité comme aujourd'hui`);
+      } else {
+        nextDate = this.startOfDay(new Date(rec.nextDate));
+      }
+      this.logger.log(`  → "${rec.label}" nextDate=${nextDate.toISOString()} due=${nextDate <= today}`);
       if (nextDate <= today) {
         await this.operationModel.create({
           date: today,
