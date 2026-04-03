@@ -49,9 +49,11 @@ export class RecurringController {
       nextDate,
     });
 
-    if (dto.isActive !== false) {
-      await this.scheduler.processAllDue();
-    }
+    try {
+      if (dto.isActive !== false) {
+        await this.scheduler.processAllDue();
+      }
+    } catch (_) { /* non-blocking */ }
 
     return created;
   }
@@ -78,9 +80,11 @@ export class RecurringController {
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
     if (dto.notes !== undefined) data.notes = dto.notes;
     const updated = await this.recurringRepo.update(id, req.user.userId, data);
-    if (dto.isActive === true) {
-      await this.scheduler.processAllDue();
-    }
+    try {
+      if (dto.isActive === true) {
+        await this.scheduler.processAllDue();
+      }
+    } catch (_) { /* non-blocking */ }
     return updated;
   }
 

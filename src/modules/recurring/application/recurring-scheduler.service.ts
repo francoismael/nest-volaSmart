@@ -17,7 +17,11 @@ export class RecurringSchedulerService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    await this.processAllDue();
+    try {
+      await this.processAllDue();
+    } catch (err) {
+      this.logger.warn('processAllDue failed on bootstrap (safe to ignore in serverless)', err);
+    }
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -26,6 +30,7 @@ export class RecurringSchedulerService implements OnApplicationBootstrap {
   }
 
   async processAllDue(): Promise<void> {
+    try {
     const today = this.startOfDay(new Date());
     const allActive = await this.recurringModel.find({ isActive: true }).exec();
     this.logger.log(`processAllDue: today=${today.toISOString()}, ${allActive.length} actifs`);
@@ -61,6 +66,9 @@ export class RecurringSchedulerService implements OnApplicationBootstrap {
 
     if (created > 0) {
       this.logger.log(`${created} opération(s) récurrente(s) créée(s)`);
+    }
+    } catch (err) {
+      this.logger.error('processAllDue failed', err);
     }
   }
 
