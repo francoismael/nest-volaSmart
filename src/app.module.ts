@@ -19,7 +19,8 @@ import { BudgetModule } from './modules/budget/budget.module';
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     MongooseModule.forRoot(
-      'mongodb+srv://franco:franco9006090@cluster0.tpd7c.mongodb.net/',
+      process.env.MONGODB_URI ||
+        'mongodb+srv://franco:franco9006090@cluster0.tpd7c.mongodb.net/',
     ),
     AuthenticationModule,
     AccountsModule,
