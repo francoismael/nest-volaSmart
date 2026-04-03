@@ -9,12 +9,14 @@ let cachedApp: any;
 
 async function bootstrap() {
   if (!cachedApp) {
-    const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
+    const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
+      logger: ['error', 'warn', 'log'],
+    });
     app.enableCors({
       origin: true,
       credentials: true,
     });
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(new ValidationPipe());
     await app.init();
     cachedApp = app;
   }
@@ -22,6 +24,11 @@ async function bootstrap() {
 }
 
 export default async (req: Request, res: Response) => {
-  const app = await bootstrap();
-  app(req, res);
+  try {
+    const app = await bootstrap();
+    app(req, res);
+  } catch (err) {
+    console.error('Bootstrap failed:', err);
+    res.status(500).json({ error: 'Server initialization failed', details: String(err) });
+  }
 };

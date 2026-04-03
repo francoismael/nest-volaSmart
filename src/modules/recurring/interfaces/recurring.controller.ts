@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Delete, Get, Param, Patch, Post, Request, UseGuards,
+  Body, Controller, Delete, Get, Logger, Param, Patch, Post, Request, UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../authentication/guards/jwt-auth.guard';
 import { MongoRecurringRepository } from '../infrastructure/repositories/mongo-recurring.repository';
@@ -12,6 +12,8 @@ interface RequestWithUser { user: { userId: string }; }
 @UseGuards(JwtAuthGuard)
 @Controller('recurring')
 export class RecurringController {
+  private readonly logger = new Logger(RecurringController.name);
+
   constructor(
     private readonly recurringRepo: MongoRecurringRepository,
     private readonly scheduler: RecurringSchedulerService,
@@ -19,43 +21,49 @@ export class RecurringController {
 
   @Post()
   async create(@Request() req: RequestWithUser, @Body() dto: CreateRecurringDto) {
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
-
-    const freq = dto.frequency ?? 'monthly';
-    let nextDate: Date;
-
-    if (freq === 'weekly' && dto.daysOfWeek?.length) {
-      nextDate = this.nextWeeklyDate(today, dto.daysOfWeek);
-    } else if (freq === 'monthly') {
-      nextDate = this.nextMonthlyDate(today, dto.dayOfMonth ?? 1);
-    } else if (freq === 'yearly') {
-      nextDate = this.nextYearlyDate(today);
-    } else {
-      // daily : première exécution aujourd'hui
-      nextDate = today;
-    }
-
-    const created = await this.recurringRepo.create({
-      label: dto.label,
-      amount: dto.amount,
-      type: dto.type ?? 'debit',
-      frequency: freq,
-      dayOfMonth: dto.dayOfMonth ?? 1,
-      daysOfWeek: dto.daysOfWeek ?? [1],
-      isActive: dto.isActive ?? true,
-      userId: req.user.userId,
-      notes: dto.notes,
-      nextDate,
-    });
-
     try {
-      if (dto.isActive !== false) {
-        await this.scheduler.processAllDue();
-      }
-    } catch (_) { /* non-blocking */ }
+      this.logger.log(`POST /recurring — userId=${req.user?.userId}, body=${JSON.stringify(dto)}`);
 
-    return created;
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+
+      const freq = dto.frequency ?? 'monthly';
+      let nextDate: Date;
+
+      if (freq === 'weekly' && dto.daysOfWeek?.length) {
+        nextDate = this.nextWeeklyDate(today, dto.daysOfWeek);
+      } else if (freq === 'monthly') {
+        nextDate = this.nextMonthlyDate(today, dto.dayOfMonth ?? 1);
+      } else if (freq === 'yearly') {
+        nextDate = this.nextYearlyDate(today);
+      } else {
+        nextDate = today;
+      }
+
+      const created = await this.recurringRepo.create({
+        label: dto.label,
+        amount: dto.amount,
+        type: dto.type ?? 'debit',
+        frequency: freq,
+        dayOfMonth: dto.dayOfMonth ?? 1,
+        daysOfWeek: dto.daysOfWeek ?? [1],
+        isActive: dto.isActive ?? true,
+        userId: req.user.userId,
+        notes: dto.notes,
+        nextDate,
+      });
+
+      try {
+        if (dto.isActive !== false) {
+          await this.scheduler.processAllDue();
+        }
+      } catch (_) { /* non-blocking */ }
+
+      return created;
+    } catch (err) {
+      this.logger.error(`POST /recurring FAILED: ${err.message}`, err.stack);
+      throw err;
+    }
   }
 
   @Get()
