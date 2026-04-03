@@ -18,7 +18,9 @@ import { BudgetModule } from './modules/budget/budget.module';
   imports: [
     ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
-    MongooseModule.forRoot('mongodb://localhost:27017/volaSmart'),
+    MongooseModule.forRoot(
+      'mongodb+srv://franco:franco9006090@cluster0.tpd7c.mongodb.net/',
+    ),
     AuthenticationModule,
     AccountsModule,
     OperationsModule,
@@ -29,9 +31,6 @@ import { BudgetModule } from './modules/budget/budget.module';
     BudgetModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
-  ],
+  providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}
